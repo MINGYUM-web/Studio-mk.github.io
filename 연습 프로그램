@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="theme-color" content="#1D9E75" />
+<title>Studio MK</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.0.0/tabler-icons.min.css" />
+<style>
+  :root {
+    --color-bg: #F5F5F5;
+    --color-surface: #FFFFFF;
+    --color-border: #E5E5E5;
+    --color-border-light: #F0F0F0;
+    --color-text-primary: #111111;
+    --color-text-secondary: #555555;
+    --color-text-tertiary: #999999;
+    --color-green: #1D9E75;
+    --color-green-dark: #0F6E56;
+    --color-green-bg: #E1F5EE;
+    --color-red: #E24B4A;
+    --color-red-dark: #A32D2D;
+    --color-red-bg: #FCEBEB;
+    --color-purple: #534AB7;
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { font-family: var(--font); background: var(--color-bg); min-height: 100vh; }
+  .app { max-width: 430px; margin: 0 auto; min-height: 100vh; background: var(--color-bg); position: relative; }
+  .screen { display: none; flex-direction: column; min-height: 100vh; }
+  .screen.active { display: flex; }
+
+  /* Top bar */
+  .top-bar { background: var(--color-surface); border-bottom: 1px solid var(--color-border); padding: 14px 16px; display: flex; align-items: center; gap: 10px; position: sticky; top: 0; z-index: 10; }
+  .top-bar h2 { font-size: 17px; font-weight: 600; color: var(--color-text-primary); }
+  .icon-btn { background: none; border: none; cursor: pointer; color: var(--color-text-secondary); font-size: 22px; padding: 2px; line-height: 1; display: flex; align-items: center; }
+  .ml-auto { margin-left: auto; }
+
+  /* Login */
+  #screen-login { padding: 0 24px 40px; justify-content: center; background: var(--color-surface); }
+  .login-logo { text-align: center; margin-bottom: 40px; margin-top: 60px; }
+  .logo-icon { width: 72px; height: 72px; border-radius: 20px; background: var(--color-green); display: flex; align-items: center; justify-content: center; margin: 0 auto 14px; box-shadow: 0 4px 16px rgba(29,158,117,0.3); }
+  .logo-icon i { color: #fff; font-size: 36px; }
+  .login-logo h1 { font-size: 24px; font-weight: 700; color: var(--color-text-primary); letter-spacing: -0.5px; }
+  .login-logo p { font-size: 14px; color: var(--color-text-secondary); margin-top: 4px; }
+  .field-label { font-size: 13px; font-weight: 500; color: var(--color-text-secondary); margin-bottom: 8px; display: block; }
+  .pin-input { width: 100%; padding: 14px; font-size: 26px; letter-spacing: 12px; text-align: center; border: 1.5px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-bg); color: var(--color-text-primary); margin-bottom: 12px; outline: none; transition: border-color 0.15s; }
+  .pin-input:focus { border-color: var(--color-green); }
+  .btn-primary { width: 100%; padding: 15px; background: var(--color-green); color: #fff; border: none; border-radius: var(--radius-md); font-size: 16px; font-weight: 600; cursor: pointer; transition: opacity 0.15s; }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-primary:not(:disabled):active { opacity: 0.85; }
+  .btn-secondary { width: 100%; padding: 14px; background: none; border: 1.5px solid var(--color-border); border-radius: var(--radius-md); font-size: 15px; font-weight: 500; color: var(--color-text-secondary); cursor: pointer; margin-top: 10px; transition: border-color 0.15s; }
+  .btn-secondary:active { border-color: var(--color-green); color: var(--color-green); }
+  .error-msg { font-size: 13px; color: var(--color-red-dark); text-align: center; margin-top: 8px; min-height: 20px; }
+  .success-msg { font-size: 13px; color: var(--color-green-dark); text-align: center; margin-top: 8px; min-height: 20px; }
+  .instr-link { display: block; text-align: center; margin-top: 28px; background: none; border: none; font-size: 13px; color: var(--color-text-tertiary); cursor: pointer; padding: 4px; }
+
+  /* Change PIN */
+  #screen-change-pin { background: var(--color-surface); }
+  .change-body { flex: 1; padding: 32px 24px 40px; display: flex; flex-direction: column; justify-content: center; }
+  .change-body h2 { font-size: 20px; font-weight: 700; color: var(--color-text-primary); margin-bottom: 6px; }
+  .change-body p { font-size: 14px; color: var(--color-text-secondary); margin-bottom: 28px; line-height: 1.5; }
+  .field-group { margin-bottom: 16px; }
+
+  /* Practice */
+  #screen-practice { background: var(--color-bg); }
+  .practice-header { background: var(--color-surface); padding: 16px; border-bottom: 1px solid var(--color-border); }
+  .student-info-row { display: flex; align-items: center; gap: 12px; }
+  .avatar { width: 42px; height: 42px; border-radius: 50%; background: var(--color-green-bg); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: var(--color-green-dark); flex-shrink: 0; }
+  .student-name { font-size: 16px; font-weight: 600; color: var(--color-text-primary); }
+  .status-badge { margin-left: auto; font-size: 12px; padding: 4px 10px; border-radius: 20px; font-weight: 600; }
+  .badge-idle { background: var(--color-bg); color: var(--color-text-secondary); }
+  .badge-on { background: var(--color-green-bg); color: var(--color-green-dark); }
+  .card { background: var(--color-surface); margin: 12px 16px; border-radius: var(--radius-lg); border: 1px solid var(--color-border); padding: 20px 16px; }
+  .timer-label { font-size: 11px; color: var(--color-text-tertiary); letter-spacing: 1.5px; text-transform: uppercase; text-align: center; margin-bottom: 10px; }
+  .timer-display { font-size: 56px; font-weight: 600; color: var(--color-text-primary); font-variant-numeric: tabular-nums; letter-spacing: -2px; text-align: center; transition: color 0.3s; }
+  .timer-display.running { color: var(--color-green); }
+  .big-btn { display: block; width: calc(100% - 32px); margin: 0 16px; padding: 16px; border: none; border-radius: var(--radius-md); font-size: 17px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+  .big-btn-green { background: var(--color-green); color: #fff; }
+  .big-btn-green:active { opacity: 0.85; }
+  .big-btn-pause { background: var(--color-surface); color: var(--color-red); border: 2px solid var(--color-red) !important; }
+  .big-btn-red { background: var(--color-red); color: #fff; }
+  .big-btn-red:active { opacity: 0.85; }
+  .big-btn:disabled { background: var(--color-bg); color: var(--color-text-tertiary); cursor: not-allowed; }
+
+  .rec-title { font-size: 13px; font-weight: 600; color: var(--color-text-secondary); margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+  .rec-counter { margin-left: auto; font-size: 13px; font-weight: 700; color: var(--color-text-tertiary); }
+  .rec-counter.done { color: var(--color-green); }
+  .rec-btn { width: 100%; padding: 14px; border: 1.5px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-bg); color: var(--color-text-primary); font-size: 15px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.15s; }
+  .rec-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .rec-btn.recording { background: var(--color-red-bg); border-color: var(--color-red); color: var(--color-red-dark); }
+  .rec-list { margin-top: 12px; display: flex; flex-direction: column; gap: 10px; }
+  .rec-item { background: var(--color-green-bg); border-radius: var(--radius-md); padding: 12px; }
+  .rec-item-top { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: var(--color-green-dark); margin-bottom: 8px; }
+  .rec-item-actions { display: flex; gap: 8px; }
+  .rec-play-btn { flex: 1; padding: 8px 12px; background: #fff; border: 1px solid #A8D9C8; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; color: var(--color-green-dark); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; }
+  .rec-dl-btn { flex: 1; padding: 8px 12px; background: var(--color-green); border: none; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; }
+  audio { width: 100%; margin-top: 8px; height: 36px; display: none; }
+  audio.visible { display: block; }
+  .mic-notice { font-size: 12px; color: var(--color-text-tertiary); text-align: center; padding: 6px 16px 0; }
+
+  /* Instructor login */
+  #screen-instr-login { padding: 0 24px 40px; justify-content: center; background: var(--color-surface); }
+
+  /* Instructor dashboard */
+  #screen-instructor { background: var(--color-bg); }
+  .tab-row { display: flex; gap: 8px; padding: 12px 16px 0; }
+  .tab-btn { flex: 1; padding: 10px; border-radius: var(--radius-md); font-size: 14px; font-weight: 600; cursor: pointer; border: 1.5px solid var(--color-border); background: var(--color-bg); color: var(--color-text-secondary); transition: all 0.15s; }
+  .tab-btn.active { background: var(--color-green); color: #fff; border-color: var(--color-green); }
+  .dashboard-list { padding: 12px 16px; display: flex; flex-direction: column; gap: 12px; }
+  .d-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 16px; }
+  .d-card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .d-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .stat-box { background: var(--color-bg); border-radius: var(--radius-md); padding: 12px; }
+  .stat-label { font-size: 11px; color: var(--color-text-tertiary); margin-bottom: 4px; font-weight: 500; }
+  .stat-val { font-size: 20px; font-weight: 700; color: var(--color-text-primary); }
+  .empty-note { font-size: 13px; color: var(--color-text-tertiary); }
+
+  /* Settings */
+  #screen-settings { background: var(--color-bg); }
+  .settings-card { background: var(--color-surface); margin: 12px 16px; border-radius: var(--radius-lg); border: 1px solid var(--color-border); padding: 16px; }
+  .settings-card h3 { font-size: 13px; font-weight: 700; color: var(--color-text-secondary); margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .student-row { display: flex; align-items: center; gap: 8px; padding: 10px 0; border-bottom: 1px solid var(--color-border-light); }
+  .student-row:last-child { border-bottom: none; }
+  .s-row-info { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
+  .s-row-name { font-size: 14px; font-weight: 600; color: var(--color-text-primary); }
+  .s-pin-input { width: 90px; padding: 8px 10px; font-size: 14px; border: 1.5px solid var(--color-border); border-radius: var(--radius-sm); background: var(--color-bg); color: var(--color-text-primary); text-align: center; outline: none; }
+  .s-pin-input:focus { border-color: var(--color-green); }
+  .s-save-btn { padding: 8px 12px; background: var(--color-green); color: #fff; border: none; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+  .s-del-btn { background: none; border: 1.5px solid var(--color-border); border-radius: var(--radius-sm); padding: 7px 9px; cursor: pointer; color: var(--color-red-dark); font-size: 16px; display: flex; align-items: center; }
+  .add-form { margin-top: 14px; border-top: 1px solid var(--color-border-light); padding-top: 14px; display: flex; flex-direction: column; gap: 8px; }
+  .add-form-title { font-size: 12px; color: var(--color-text-tertiary); font-weight: 500; }
+  .add-row { display: flex; gap: 8px; }
+  .add-input { flex: 1; padding: 10px 12px; font-size: 14px; border: 1.5px solid var(--color-border); border-radius: var(--radius-sm); background: var(--color-bg); color: var(--color-text-primary); min-width: 0; outline: none; }
+  .add-input:focus { border-color: var(--color-green); }
+  .add-btn { padding: 10px 14px; background: var(--color-green); color: #fff; border: none; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+  .add-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .settings-ok { font-size: 13px; color: var(--color-green-dark); margin-top: 8px; min-height: 18px; font-weight: 500; }
+  .instr-code-row { display: flex; gap: 8px; align-items: center; }
+  .instr-code-input { flex: 1; padding: 10px 12px; font-size: 15px; border: 1.5px solid var(--color-border); border-radius: var(--radius-sm); background: var(--color-bg); color: var(--color-text-primary); letter-spacing: 4px; text-align: center; outline: none; }
+  .instr-code-input:focus { border-color: var(--color-green); }
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- 홈 -->
+<div id="screen-login" class="screen active">
+  <div class="login-logo">
+    <div class="logo-icon"><i class="ti ti-microphone"></i></div>
+    <h1>Studio MK</h1>
+    <p>보컬 연습 트래커</p>
+  </div>
+  <label class="field-label">비밀번호</label>
+  <input class="pin-input" type="password" maxlength="6" inputmode="numeric" id="student-pin" placeholder="••••" oninput="onStudentPin()" />
+  <button class="btn-primary" id="student-login-btn" disabled onclick="studentLogin()">연습 시작하기</button>
+  <button class="btn-secondary" onclick="goChangePin()">비밀번호 변경</button>
+  <div class="error-msg" id="student-error"></div>
+  <button class="instr-link" onclick="showScreen('screen-instr-login')">강사 모드 →</button>
+</div>
+
+<!-- 비밀번호 변경 -->
+<div id="screen-change-pin" class="screen">
+  <div class="top-bar">
+    <button class="icon-btn" onclick="showScreen('screen-login')"><i class="ti ti-arrow-left"></i></button>
+    <h2>비밀번호 변경</h2>
+  </div>
+  <div class="change-body">
+    <h2>내 비밀번호 변경</h2>
+    <p>현재 비밀번호로 본인 확인 후<br>새 비밀번호를 설정해요.</p>
+    <div class="field-group">
+      <label class="field-label">현재 비밀번호</label>
+      <input class="pin-input" type="password" maxlength="6" inputmode="numeric" id="cur-pin" placeholder="••••" oninput="onChangePinInput()" />
+    </div>
+    <div class="field-group">
+      <label class="field-label">새 비밀번호</label>
+      <input class="pin-input" type="password" maxlength="6" inputmode="numeric" id="new-pin" placeholder="••••" oninput="onChangePinInput()" />
+    </div>
+    <div class="field-group">
+      <label class="field-label">새 비밀번호 확인</label>
+      <input class="pin-input" type="password" maxlength="6" inputmode="numeric" id="new-pin2" placeholder="••••" oninput="onChangePinInput()" />
+    </div>
+    <button class="btn-primary" id="change-pin-btn" disabled onclick="submitChangePin()">변경하기</button>
+    <div class="error-msg" id="change-pin-error"></div>
+    <div class="success-msg" id="change-pin-ok"></div>
+  </div>
+</div>
+
+<!-- 연습 -->
+<div id="screen-practice" class="screen">
+  <div class="practice-header">
+    <div class="student-info-row">
+      <div class="avatar" id="prac-avatar">MK</div>
+      <div><div class="student-name" id="prac-name">이름</div></div>
+      <span class="status-badge badge-idle" id="status-badge">대기 중</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="timer-label">연습 시간</div>
+    <div class="timer-display" id="timer-display">00:00:00</div>
+  </div>
+
+  <button class="big-btn big-btn-green" id="start-btn" onclick="togglePractice()">
+    <i class="ti ti-player-play"></i> 연습 시작
+  </button>
+
+  <div class="card" style="margin-top:12px;">
+    <div class="rec-title">
+      <i class="ti ti-disc"></i> 녹음
+      <span class="rec-counter" id="rec-counter">0 / 3</span>
+    </div>
+    <button class="rec-btn" id="rec-btn" disabled onclick="toggleRecord()">
+      <i class="ti ti-microphone"></i> <span id="rec-label">녹음 시작</span>
+    </button>
+    <div class="rec-list" id="rec-list"></div>
+  </div>
+
+  <p class="mic-notice" id="mic-notice"></p>
+
+  <button class="big-btn big-btn-red" id="end-btn" disabled onclick="endPractice()" style="margin-top:12px;margin-bottom:32px;">
+    연습 종료
+  </button>
+</div>
+
+<!-- 강사 로그인 -->
+<div id="screen-instr-login" class="screen">
+  <div style="text-align:center;margin-top:60px;margin-bottom:40px;">
+    <div class="logo-icon" style="background:var(--color-purple);margin:0 auto 14px;">
+      <i class="ti ti-shield-lock" style="color:#fff;font-size:36px;"></i>
+    </div>
+    <h1 style="font-size:24px;font-weight:700;color:var(--color-text-primary);">강사 모드</h1>
+    <p style="font-size:14px;color:var(--color-text-secondary);margin-top:4px;">강사 전용 코드를 입력하세요</p>
+  </div>
+  <label class="field-label">강사 코드</label>
+  <input class="pin-input" type="password" maxlength="6" inputmode="numeric" id="instr-pin" placeholder="••••••" oninput="onInstrPin()" />
+  <button class="btn-primary" id="instr-login-btn" disabled onclick="instrLogin()">입장하기</button>
+  <div class="error-msg" id="instr-error"></div>
+  <button class="instr-link" onclick="showScreen('screen-login')">← 뒤로</button>
+</div>
+
+<!-- 강사 대시보드 -->
+<div id="screen-instructor" class="screen">
+  <div class="top-bar">
+    <button class="icon-btn" onclick="showScreen('screen-login')"><i class="ti ti-arrow-left"></i></button>
+    <h2>강사 대시보드</h2>
+    <button class="icon-btn ml-auto" onclick="openSettings()"><i class="ti ti-settings"></i></button>
+  </div>
+  <div class="tab-row">
+    <button class="tab-btn active" id="tab-today" onclick="switchTab('today')">오늘</button>
+    <button class="tab-btn" id="tab-all" onclick="switchTab('all')">전체 기록</button>
+  </div>
+  <div class="dashboard-list" id="instr-list"></div>
+</div>
+
+<!-- 설정 -->
+<div id="screen-settings" class="screen">
+  <div class="top-bar">
+    <button class="icon-btn" onclick="showScreen('screen-instructor')"><i class="ti ti-arrow-left"></i></button>
+    <h2>설정</h2>
+  </div>
+
+  <div class="settings-card">
+    <h3>학생 관리</h3>
+    <div id="student-rows"></div>
+    <div class="settings-ok" id="student-save-ok"></div>
+    <div class="add-form">
+      <p class="add-form-title">새 학생 추가</p>
+      <div class="add-row">
+        <input class="add-input" type="text" id="add-name" placeholder="이름 (예: 홍길동)" oninput="onAddInput()" />
+        <input class="add-input" type="number" id="add-pin-field" placeholder="초기 비밀번호" oninput="onAddInput()" style="max-width:140px;" />
+        <button class="add-btn" id="add-btn" disabled onclick="addStudent()">추가</button>
+      </div>
+      <div class="error-msg" id="add-error" style="text-align:left;"></div>
+    </div>
+  </div>
+
+  <div class="settings-card">
+    <h3>강사 코드 변경</h3>
+    <div class="instr-code-row">
+      <input class="instr-code-input" type="password" maxlength="6" inputmode="numeric" id="new-instr-pin" placeholder="새 코드" />
+      <button class="s-save-btn" onclick="saveInstrPin()">저장</button>
+    </div>
+    <div class="settings-ok" id="instr-save-ok"></div>
+  </div>
+</div>
+
+</div>
+
+<script>
+// ── 데이터 ──────────────────────────────────────────
+const DB = {
+  instrPin: '1234',
+  students: {}
+};
+
+let currentStudent = null;
+let practicing = false;
+let timerInterval = null;
+let seconds = 0;
+let recCount = 0;
+let mediaRecorder = null;
+let audioChunks = [];
+let recordedBlobs = [];
+
+// ── 화면 전환 ────────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+// ── 학생 로그인 ──────────────────────────────────────
+function onStudentPin() {
+  document.getElementById('student-login-btn').disabled = !document.getElementById('student-pin').value.length;
+  document.getElementById('student-error').textContent = '';
+}
+
+function studentLogin() {
+  const pin = document.getElementById('student-pin').value;
+  const found = Object.entries(DB.students).find(([, d]) => d.pin === pin);
+  if (!found) {
+    document.getElementById('student-error').textContent = '비밀번호가 맞지 않아요.';
+    document.getElementById('student-pin').value = '';
+    document.getElementById('student-login-btn').disabled = true;
+    return;
+  }
+  currentStudent = { name: found[0], ...found[1] };
+  initPractice();
+  document.getElementById('student-pin').value = '';
+  document.getElementById('student-login-btn').disabled = true;
+  showScreen('screen-practice');
+}
+
+// ── 비밀번호 변경 ────────────────────────────────────
+function goChangePin() {
+  ['cur-pin', 'new-pin', 'new-pin2'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('change-pin-btn').disabled = true;
+  document.getElementById('change-pin-error').textContent = '';
+  document.getElementById('change-pin-ok').textContent = '';
+  showScreen('screen-change-pin');
+}
+
+function onChangePinInput() {
+  const a = document.getElementById('cur-pin').value;
+  const b = document.getElementById('new-pin').value;
+  const c = document.getElementById('new-pin2').value;
+  document.getElementById('change-pin-btn').disabled = !(a && b && c);
+  document.getElementById('change-pin-error').textContent = '';
+  document.getElementById('change-pin-ok').textContent = '';
+}
+
+function submitChangePin() {
+  const cur = document.getElementById('cur-pin').value;
+  const n1 = document.getElementById('new-pin').value;
+  const n2 = document.getElementById('new-pin2').value;
+  const found = Object.entries(DB.students).find(([, d]) => d.pin === cur);
+  if (!found) { document.getElementById('change-pin-error').textContent = '현재 비밀번호가 맞지 않아요.'; return; }
+  if (n1 !== n2) { document.getElementById('change-pin-error').textContent = '새 비밀번호가 서로 달라요.'; return; }
+  if (n1 === cur) { document.getElementById('change-pin-error').textContent = '현재 비밀번호와 같은 번호예요.'; return; }
+  DB.students[found[0]].pin = n1;
+  ['cur-pin', 'new-pin', 'new-pin2'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('change-pin-btn').disabled = true;
+  document.getElementById('change-pin-ok').textContent = '비밀번호가 변경됐어요 ✓';
+  setTimeout(() => showScreen('screen-login'), 1500);
+}
+
+// ── 연습 화면 ────────────────────────────────────────
+function initPractice() {
+  seconds = 0; recCount = 0; recordedBlobs = [];
+  if (timerInterval) clearInterval(timerInterval);
+  document.getElementById('prac-avatar').textContent = currentStudent.initials;
+  document.getElementById('prac-name').textContent = currentStudent.name;
+  document.getElementById('timer-display').textContent = '00:00:00';
+  document.getElementById('timer-display').classList.remove('running');
+  document.getElementById('rec-counter').textContent = '0 / 3';
+  document.getElementById('rec-counter').classList.remove('done');
+  document.getElementById('rec-list').innerHTML = '';
+  document.getElementById('rec-btn').disabled = true;
+  document.getElementById('rec-btn').className = 'rec-btn';
+  document.getElementById('end-btn').disabled = true;
+  document.getElementById('start-btn').className = 'big-btn big-btn-green';
+  document.getElementById('start-btn').innerHTML = '<i class="ti ti-player-play"></i> 연습 시작';
+  document.getElementById('status-badge').textContent = '대기 중';
+  document.getElementById('status-badge').className = 'status-badge badge-idle';
+  document.getElementById('rec-label').textContent = '녹음 시작';
+  document.getElementById('mic-notice').textContent = '';
+  practicing = false;
+}
+
+function togglePractice() {
+  if (!practicing) {
+    practicing = true;
+    timerInterval = setInterval(() => {
+      seconds++;
+      const h = String(Math.floor(seconds / 3600)).padStart(2, '0');
+      const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
+      const s = String(seconds % 60).padStart(2, '0');
+      document.getElementById('timer-display').textContent = `${h}:${m}:${s}`;
+    }, 1000);
+    document.getElementById('timer-display').classList.add('running');
+    document.getElementById('status-badge').textContent = '연습 중';
+    document.getElementById('status-badge').className = 'status-badge badge-on';
+    document.getElementById('start-btn').className = 'big-btn big-btn-pause';
+    document.getElementById('start-btn').innerHTML = '<i class="ti ti-player-pause"></i> 일시정지';
+    if (recCount < 3) document.getElementById('rec-btn').disabled = false;
+  } else {
+    practicing = false;
+    clearInterval(timerInterval);
+    document.getElementById('timer-display').classList.remove('running');
+    document.getElementById('status-badge').textContent = '일시정지';
+    document.getElementById('status-badge').className = 'status-badge badge-idle';
+    document.getElementById('start-btn').className = 'big-btn big-btn-green';
+    document.getElementById('start-btn').innerHTML = '<i class="ti ti-player-play"></i> 다시 시작';
+    document.getElementById('rec-btn').disabled = true;
+  }
+}
+
+// ── 녹음 ─────────────────────────────────────────────
+async function toggleRecord() {
+  const btn = document.getElementById('rec-btn');
+  const label = document.getElementById('rec-label');
+
+  if (!mediaRecorder || mediaRecorder.state === 'inactive') {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      audioChunks = [];
+      const mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4';
+      mediaRecorder = new MediaRecorder(stream, { mimeType });
+      mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(audioChunks, { type: mediaRecorder.mimeType });
+        const url = URL.createObjectURL(blob);
+        const ext = mediaRecorder.mimeType.includes('webm') ? 'webm' : 'm4a';
+        const today = new Date().toISOString().slice(0, 10);
+        const fileName = `${currentStudent.name}_연습녹음${recCount}_${today}.${ext}`;
+        recordedBlobs.push({ blob, url, name: fileName });
+        stream.getTracks().forEach(t => t.stop());
+        addRecItem(recCount, url, fileName);
+        document.getElementById('mic-notice').textContent = '';
+      };
+      mediaRecorder.start();
+      btn.className = 'rec-btn recording';
+      label.textContent = '녹음 중 ● (완료하려면 다시 누르기)';
+      document.getElementById('mic-notice').textContent = '🎙 마이크가 활성화되어 있어요';
+    } catch (e) {
+      document.getElementById('mic-notice').textContent = '마이크 권한이 필요해요. 브라우저에서 허용해주세요.';
+    }
+  } else {
+    recCount++;
+    mediaRecorder.stop();
+    btn.className = 'rec-btn';
+    label.textContent = recCount >= 3 ? '녹음 완료 ✓' : '녹음 시작';
+    const counter = document.getElementById('rec-counter');
+    counter.textContent = `${recCount} / 3`;
+    if (recCount >= 3) {
+      counter.classList.add('done');
+      btn.disabled = true;
+      document.getElementById('end-btn').disabled = false;
+    }
+  }
+}
+
+function addRecItem(num, url, fileName) {
+  const list = document.getElementById('rec-list');
+  const item = document.createElement('div');
+  item.className = 'rec-item';
+  item.innerHTML = `
+    <div class="rec-item-top"><i class="ti ti-check"></i> 연습 녹음 ${num}</div>
+    <div class="rec-item-actions">
+      <button class="rec-play-btn" onclick="togglePlay(${num}, this)">
+        <i class="ti ti-player-play"></i> 재생
+      </button>
+      <button class="rec-dl-btn" onclick="downloadRec(${num})">
+        <i class="ti ti-download"></i> 다운로드
+      </button>
+    </div>
+    <audio id="audio-${num}" src="${url}" onended="onAudioEnd(${num}, document.querySelector('[onclick*=\\'togglePlay(${num},\\']'))"></audio>
+  `;
+  list.appendChild(item);
+}
+
+function togglePlay(num, btn) {
+  const audio = document.getElementById('audio-' + num);
+  if (audio.paused) {
+    document.querySelectorAll('audio').forEach(a => { a.pause(); a.currentTime = 0; });
+    document.querySelectorAll('.rec-play-btn').forEach(b => { b.innerHTML = '<i class="ti ti-player-play"></i> 재생'; });
+    audio.play();
+    btn.innerHTML = '<i class="ti ti-player-pause"></i> 정지';
+  } else {
+    audio.pause(); audio.currentTime = 0;
+    btn.innerHTML = '<i class="ti ti-player-play"></i> 재생';
+  }
+}
+
+function downloadRec(num) {
+  const rec = recordedBlobs[num - 1];
+  if (!rec) return;
+  const a = document.createElement('a');
+  a.href = rec.url;
+  a.download = rec.name;
+  a.click();
+}
+
+function endPractice() {
+  clearInterval(timerInterval);
+  const h = String(Math.floor(seconds / 3600)).padStart(2, '0');
+  const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
+  const s = String(seconds % 60).padStart(2, '0');
+  const duration = `${h}:${m}:${s}`;
+  const today = new Date().toISOString().slice(0, 10);
+  DB.students[currentStudent.name].sessions.unshift({ date: today, duration, recs: recCount });
+  alert(`연습 완료! ✓\n총 연습 시간: ${duration}\n\n녹음 파일 ${recCount}개를 다운로드해서 강사님께 전송해주세요!`);
+  showScreen('screen-login');
+}
+
+// ── 강사 로그인 ──────────────────────────────────────
+function onInstrPin() {
+  document.getElementById('instr-login-btn').disabled = !document.getElementById('instr-pin').value.length;
+  document.getElementById('instr-error').textContent = '';
+}
+
+function instrLogin() {
+  const pin = document.getElementById('instr-pin').value;
+  if (pin !== DB.instrPin) {
+    document.getElementById('instr-error').textContent = '코드가 맞지 않아요.';
+    document.getElementById('instr-pin').value = '';
+    document.getElementById('instr-login-btn').disabled = true;
+    return;
+  }
+  document.getElementById('instr-pin').value = '';
+  document.getElementById('instr-login-btn').disabled = true;
+  renderDashboard('today');
+  showScreen('screen-instructor');
+}
+
+// ── 대시보드 ─────────────────────────────────────────
+function switchTab(tab) {
+  document.getElementById('tab-today').className = 'tab-btn' + (tab === 'today' ? ' active' : '');
+  document.getElementById('tab-all').className = 'tab-btn' + (tab === 'all' ? ' active' : '');
+  renderDashboard(tab);
+}
+
+function renderDashboard(tab) {
+  const today = new Date().toISOString().slice(0, 10);
+  const list = document.getElementById('instr-list');
+  list.innerHTML = '';
+  const entries = Object.entries(DB.students);
+  if (!entries.length) {
+    list.innerHTML = '<div style="padding:32px 0;text-align:center;font-size:14px;color:var(--color-text-tertiary);">등록된 학생이 없어요<br><span style="font-size:12px;">설정에서 학생을 추가해주세요</span></div>';
+    return;
+  }
+  entries.forEach(([name, data]) => {
+    const sessions = tab === 'today' ? data.sessions.filter(s => s.date === today) : data.sessions;
+    if (!sessions.length) {
+      const card = document.createElement('div');
+      card.className = 'd-card';
+      card.innerHTML = `<div class="d-card-header"><div class="avatar" style="width:36px;height:36px;font-size:12px;">${data.initials}</div><div><div class="student-name">${name}</div></div></div><p class="empty-note">${tab === 'today' ? '오늘 연습 기록 없음' : '기록 없음'}</p>`;
+      list.appendChild(card);
+      return;
+    }
+    sessions.forEach(sess => {
+      const card = document.createElement('div');
+      card.className = 'd-card';
+      card.innerHTML = `
+        <div class="d-card-header">
+          <div class="avatar" style="width:36px;height:36px;font-size:12px;">${data.initials}</div>
+          <div>
+            <div class="student-name">${name}</div>
+            <div style="font-size:11px;color:var(--color-text-tertiary);margin-top:2px;">${sess.date}</div>
+          </div>
+        </div>
+        <div class="d-stats">
+          <div class="stat-box"><div class="stat-label">연습 시간</div><div class="stat-val">${sess.duration}</div></div>
+          <div class="stat-box"><div class="stat-label">녹음</div><div class="stat-val">${sess.recs}회</div></div>
+        </div>`;
+      list.appendChild(card);
+    });
+  });
+}
+
+// ── 설정 ─────────────────────────────────────────────
+function openSettings() { renderStudentRows(); showScreen('screen-settings'); }
+
+function getInitials(name) { return name.length >= 3 ? name.slice(1) : name.slice(-2); }
+
+function renderStudentRows() {
+  const container = document.getElementById('student-rows');
+  container.innerHTML = '';
+  const entries = Object.entries(DB.students);
+  if (!entries.length) {
+    container.innerHTML = '<p style="font-size:13px;color:var(--color-text-tertiary);padding:4px 0 10px;">등록된 학생 없음</p>';
+    return;
+  }
+  entries.forEach(([name, data]) => {
+    const row = document.createElement('div');
+    row.className = 'student-row';
+    row.innerHTML = `
+      <div class="s-row-info">
+        <div class="avatar" style="width:32px;height:32px;font-size:11px;">${data.initials}</div>
+        <div class="s-row-name">${name}</div>
+      </div>
+      <input class="s-pin-input" type="number" placeholder="새 PIN" id="row-pin-${name}" />
+      <button class="s-save-btn" onclick="saveStudentPin('${name}')">저장</button>
+      <button class="s-del-btn" onclick="deleteStudent('${name}')"><i class="ti ti-trash"></i></button>`;
+    container.appendChild(row);
+  });
+}
+
+function saveStudentPin(name) {
+  const input = document.getElementById('row-pin-' + name);
+  const val = input.value.trim();
+  if (!val) return;
+  DB.students[name].pin = val;
+  input.value = '';
+  showSaveOk('student-save-ok', `${name} 비밀번호 초기화됨 ✓`);
+}
+
+function deleteStudent(name) {
+  if (!confirm(`${name} 학생을 삭제할까요?\n연습 기록도 모두 사라져요.`)) return;
+  delete DB.students[name];
+  renderStudentRows();
+  showSaveOk('student-save-ok', `${name} 삭제됨`);
+}
+
+function onAddInput() {
+  const name = document.getElementById('add-name').value.trim();
+  const pin = document.getElementById('add-pin-field').value.trim();
+  document.getElementById('add-btn').disabled = !(name && pin);
+  document.getElementById('add-error').textContent = '';
+}
+
+function addStudent() {
+  const name = document.getElementById('add-name').value.trim();
+  const pin = document.getElementById('add-pin-field').value.trim();
+  if (DB.students[name]) { document.getElementById('add-error').textContent = '이미 같은 이름의 학생이 있어요.'; return; }
+  DB.students[name] = { initials: getInitials(name), pin, sessions: [] };
+  document.getElementById('add-name').value = '';
+  document.getElementById('add-pin-field').value = '';
+  document.getElementById('add-btn').disabled = true;
+  renderStudentRows();
+  showSaveOk('student-save-ok', `${name} 추가됨 ✓`);
+}
+
+function saveInstrPin() {
+  const val = document.getElementById('new-instr-pin').value.trim();
+  if (!val) return;
+  DB.instrPin = val;
+  document.getElementById('new-instr-pin').value = '';
+  showSaveOk('instr-save-ok', '강사 코드 저장됨 ✓');
+}
+
+function showSaveOk(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  setTimeout(() => el.textContent = '', 2500);
+}
+</script>
+</body>
+</html>
